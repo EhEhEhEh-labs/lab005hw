@@ -1,0 +1,27 @@
+name: Build
+on:
+  push:
+jobs:
+  build-project:
+    name: Build Project
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure and Build banking
+        run: |
+          cd banking
+          cmake -B build
+          cmake --build build
+      - name: Test and Coveralls
+        env:
+          COVERALLS_REPO_TOKEN: ${{ github.token }}
+        run: |
+          pip install cpp-coveralls
+          cmake -B build
+          cmake --build build
+          cd build
+          ./test_app --enable-gcov
+          cd ..
+          coveralls --root . -E ".*gtest.*" -E ".*CMakeFiles.*" -E ".*third-party.*"
