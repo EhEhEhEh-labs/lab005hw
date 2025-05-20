@@ -1,25 +1,27 @@
 name: Build
-
-on: [push, pull_request]
-
+on:
+  push:
 jobs:
-  linux:
+  build-project:
+    name: Build Project
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Configure and Build
-      run: |
-   
-        cmake -B build -DCMAKE_BUILD_TYPE=Release
-        cmake --build build --parallel
+      - name: Checkout
+        uses: actions/checkout@v4.1.2
 
-  windows:
-    runs-on: windows-latest
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Configure and Build
-      run: |
-        cmake -B build -G "Visual Studio 17 2022" -A x64
-        cmake --build build --config Release --parallel
+      - name: Configure and Build banking
+        run: |
+          cd banking
+          cmake -B build
+          cmake --build build
+      - name: Test and Coveralls
+        env:
+          COVERALLS_REPO_TOKEN: ${{ github.token }}
+        run: |
+          pip install cpp-coveralls
+          cmake -B build
+          cmake --build build
+          cd build
+          ./test_app --enable-gcov
+          cd ..
+          coveralls --root . -E ".*gtest.*" -E ".*CMakeFiles.*" -E ".*third-party.*"

@@ -1,31 +1,15 @@
 cmake_minimum_required(VERSION 3.10)
-project(banking)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Создание статической библиотеки banking
-add_subdirectory(banking)
+project(Test)
 
-# Опция для включения тестов
-option(BUILD_TESTS "Build tests" ON)
+include_directories(banking)
+add_subdirectory(banking banking)
 
-if(BUILD_TESTS)
-    enable_testing()
-    
-    # Подключаем Google Test
-    add_subdirectory(third-party/gtest)
-    
-    # Ищем исходники тестов
-    file(GLOB TEST_SOURCES tests/*.cpp)
-    
-    # Создаем тестовый исполняемый файл
-    add_executable(check ${TEST_SOURCES})
-    
-    # Линкуем с библиотеками
-    target_link_libraries(check PRIVATE banking gtest_main gmock)
-    target_link_libraries(check PRIVATE banking gtest_main)
-    
-    # Добавляем тест в CTest
-    add_test(NAME banking_tests COMMAND check)
-endif()
+enable_testing()
+add_subdirectory(third-party)
+add_executable(test_app tests/test.cpp)
+target_compile_options(test_app PRIVATE --coverage)
+target_link_libraries(test_app banking gtest_main gmock_main --coverage)
