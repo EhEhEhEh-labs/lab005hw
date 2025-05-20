@@ -16,7 +16,7 @@ jobs:
           cmake --build build
       - name: Test and Coveralls
         env:
-          COVERALLS_REPO_TOKEN: ${{ github.token }}
+          COVERALLS_REPO_TOKEN: 4xJ0DVprGiDsVQ5PxelwlYxCbxehXHuaD
         run: |
           pip install cpp-coveralls
           cmake -B build
