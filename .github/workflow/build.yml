@@ -1,27 +1,47 @@
 name: Build
-on:
-  push:
+on: [push, pull_request]
+
 jobs:
-  build-project:
-    name: Build Project
+  linux-build-test:
+    name: Linux Build and Test
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4.1.2
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Configure and Build banking
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
+
+      - name: Configure and Build (Debug with coverage)
         run: |
           cd banking
-          cmake -B build
-          cmake --build build
-      - name: Test and Coveralls
-        env:
-          COVERALLS_REPO_TOKEN: ${{ github.token }}
+          cmake -B build -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE=ON
+          cmake --build build --parallel
+
+      - name: Run tests and generate coverage
         run: |
-          pip install cpp-coveralls
-          cmake -B build
-          cmake --build build
-          cd build
+          cd banking/build
           ./test_app --enable-gcov
-          cd ..
+
+      - name: Upload to Coveralls
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pip3 install cpp-coveralls
+          cd banking
           coveralls --root . -E ".*gtest.*" -E ".*CMakeFiles.*" -E ".*third-party.*"
+
+  windows-build:
+    name: Windows Build
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure and Build (Release)
+        run: |
+          cd banking
+          cmake -B build -G "Visual Studio 17 2022" -A x64
+          cmake --build build --config Release --parallel
