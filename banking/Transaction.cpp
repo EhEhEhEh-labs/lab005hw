@@ -21,7 +21,6 @@ struct Guard {
 Transaction::Transaction() : fee_(1) {}
 
 Transaction::~Transaction() {}
-
 bool Transaction::Make(Account& from, Account& to, int sum) {
   if (from.id() == to.id()) throw std::logic_error("invalid action");
 
@@ -36,7 +35,7 @@ bool Transaction::Make(Account& from, Account& to, int sum) {
 
   Credit(to, sum);
 
-  bool success = Debit(to, sum + fee_);
+  bool success = Debit(from, sum + fee_);
   if (!success) to.ChangeBalance(-sum);
 
   SaveToDataBase(from, to, sum);
@@ -56,7 +55,6 @@ bool Transaction::Debit(Account& accout, int sum) {
   }
   return false;
 }
-
 void Transaction::SaveToDataBase(Account& from, Account& to, int sum) {
   std::cout << from.id() << " send to " << to.id() << " $" << sum << std::endl;
   std::cout << "Balance " << from.id() << " is " << from.GetBalance()
